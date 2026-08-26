@@ -559,7 +559,7 @@
   /* ══════════════════════════════════════════════
      CONFIG — remplace l'URL par ton Apps Script
      ══════════════════════════════════════════════ */
-  const SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzMcIG08p_l7z-jlI_f2t44_UV5Nn0C5Nt3Uh8H3t7N_5tQAKLUfjca8LnnC5kFFTQpGQ/exec';
+  const SHEET_WEBHOOK = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
   /* ══════════════════════════════════════════════ */
 
   const COUNTRIES = ["Afghanistan","Afrique du Sud","Albanie","Algérie","Allemagne","Angola","Arabie Saoudite","Argentine","Australie","Autriche","Azerbaïdjan","Bahreïn","Bangladesh","Belgique","Bénin","Bolivie","Bosnie-Herzégovine","Brésil","Bulgarie","Burkina Faso","Burundi","Cameroun","Canada","Chili","Chine","Chypre","Colombie","Comores","Congo (RDC)","Congo (Rép.)","Corée du Sud","Côte d'Ivoire","Croatie","Cuba","Danemark","Djibouti","Égypte","Émirats arabes unis","Équateur","Eritrée","Espagne","Éthiopie","États-Unis","Finlande","France","Gabon","Gambie","Ghana","Grèce","Guatemala","Guinée","Guinée-Bissau","Guinée équatoriale","Haïti","Hongrie","Inde","Indonésie","Irak","Iran","Irlande","Italie","Jamaïque","Japon","Jordanie","Kazakhstan","Kenya","Koweït","Liban","Libye","Luxembourg","Madagascar","Mali","Maroc","Maurice","Mauritanie","Mexique","Moldavie","Mozambique","Namibie","Nigéria","Norvège","Nouvelle-Zélande","Oman","Ouganda","Pakistan","Palestine","Panama","Pays-Bas","Pérou","Philippines","Pologne","Portugal","Qatar","République centrafricaine","Roumanie","Royaume-Uni","Russie","Rwanda","Sénégal","Serbie","Sierra Leone","Slovaquie","Slovénie","Somalie","Soudan","Suède","Suisse","Tanzanie","Tchad","Togo","Tunisie","Turquie","Ukraine","Uruguay","Venezuela","Vietnam","Yémen","Zambie","Zimbabwe","Autre"];
@@ -578,7 +578,7 @@
     { id: 'experience',         type: 'choice',         icon: '💼', q: 'Années d\'expérience professionnelle',      hint: 'Travail à temps plein (≥ 30h/semaine)',
       opts: ['Moins d\'1 an','1 – 2 ans','3 – 5 ans','Plus de 5 ans'] },
     { id: 'language',           type: 'choice',         icon: '🗣', q: 'Peux-tu passer un test de langue ?',        hint: 'TEF Canada / TCF Canada (FR) ou IELTS / CELPIP (EN)',
-      opts: ['Oui, en français (TEF/TCF)','Oui, en anglais (IELTS/CELPIP)','Pas encore de test prévu','Je ne sais pas'] },
+      opts: ['Oui, en français (TEF/TCF)','Oui, en anglais (IELTS/CELPIP)','Oui, les deux (FR + EN)','Pas encore de test prévu','Je ne sais pas'] },
     { id: 'family',             type: 'family',         icon: '👨‍👩‍👧', q: 'Ta situation familiale',                      hint: 'Cela détermine le montant de fonds requis.' },
     { id: 'funds',              type: 'funds',          icon: '💰', q: 'Preuves de fonds disponibles',             hint: '' },
   ];
@@ -718,7 +718,7 @@
       if (!name || !email || !phone || !email.includes('@')) {
         return showErr('Remplis tous les champs correctement.');
       }
-      answers.name = name; answers.email = email; answers.whatsapp = phone;
+      answers.name = name; answers.email = email; answers.whatsapp = phone.replace(/^\+/, '');
 
     } else if (s.type === 'country') {
       const v = document.getElementById('sel-country').value;
@@ -750,10 +750,12 @@
     const agePasses  = ['Moins de 25 ans','25 – 29 ans','30 – 35 ans'].includes(answers.age);
     const eduPasses  = answers.education !== 'Inférieur au Baccalauréat';
     const expPasses  = answers.experience !== 'Moins d\'1 an';
-    const langPasses = answers.language === 'Oui, en français (TEF/TCF)' || answers.language === 'Oui, en anglais (IELTS/CELPIP)';
+    const langBoth   = answers.language === 'Oui, les deux (FR + EN)';
+    const langPasses = answers.language === 'Oui, en français (TEF/TCF)' || answers.language === 'Oui, en anglais (IELTS/CELPIP)' || langBoth;
+    const langBonus  = langBoth;
     const fundsPasses = answers.funds === 'Oui, j\'ai ces fonds disponibles';
     const qualified  = agePasses && eduPasses && expPasses && langPasses && fundsPasses;
-    return { qualified, agePasses, eduPasses, expPasses, langPasses, fundsPasses };
+    return { qualified, agePasses, eduPasses, expPasses, langPasses, langBonus, fundsPasses };
   }
 
   /* ─── Submit to Google Sheets ─── */
@@ -805,23 +807,49 @@
     document.getElementById('step-nav').innerHTML = '';
 
     const pills = [
-      { label: 'Âge ≤ 35 ans',        pass: q.agePasses,   val: answers.age },
-      { label: 'Bac ou plus',          pass: q.eduPasses,   val: answers.education },
-      { label: 'Expérience ≥ 1 an',    pass: q.expPasses,   val: answers.experience },
-      { label: 'Test de langue',       pass: q.langPasses,  val: answers.language },
-      { label: 'Fonds disponibles',    pass: q.fundsPasses, val: answers.funds },
+      { label: 'Âge ≤ 35 ans',     pass: q.agePasses },
+      { label: 'Bac ou plus',       pass: q.eduPasses },
+      { label: 'Expérience ≥ 1 an', pass: q.expPasses },
+      { label: q.langBonus ? 'Test FR + EN ⭐' : 'Test de langue', pass: q.langPasses },
+      { label: 'Fonds disponibles', pass: q.fundsPasses },
     ].map(p =>
       `<span class="cpill ${p.pass ? 'pass' : 'fail'}">${p.pass ? '✓' : '✗'} ${p.label}</span>`
     ).join('');
 
     const firstName = answers.name.split(' ')[0];
 
+    // Build per-criterion advice for disqualified screen
+    function buildAdvice(q) {
+      const tips = [];
+      if (!q.agePasses) {
+        tips.push({ icon: '🎂', text: "L'âge est le seul critère sur lequel tu n'as pas de contrôle. Entrée Express favorise les candidats de moins de 35 ans — malheureusement, ce n'est pas quelque chose qui peut changer." });
+      }
+      if (!q.eduPasses) {
+        tips.push({ icon: '🎓', text: "Un diplôme de niveau Baccalauréat (Licence / Bachelor) est le minimum requis. Si tu es en cours d'études, termine ton diplôme avant de soumettre ton profil." });
+      }
+      if (!q.expPasses) {
+        tips.push({ icon: '💼', text: "Tu as besoin d'au moins 1 an d'expérience professionnelle à temps plein. Continue à travailler — dès que tu atteins 12 mois, tu pourras postuler." });
+      }
+      if (!q.langPasses) {
+        tips.push({ icon: '🗣', text: "Un test de langue officiel est obligatoire. Prépare-toi et passe le TEF Canada ou TCF Canada (en français), ou l'IELTS / CELPIP (en anglais). Un bon score améliore aussi ton pointage CRS." });
+      }
+      if (!q.fundsPasses) {
+        tips.push({ icon: '💰', text: "Tu dois pouvoir prouver que tu as les fonds suffisants sur ton compte. Commence à épargner dès maintenant et conserve tes relevés bancaires des 6 derniers mois." });
+      }
+      return tips.map(t =>
+        `<div style="display:flex;gap:12px;align-items:flex-start;text-align:left;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+          <span style="font-size:20px;flex-shrink:0">${t.icon}</span>
+          <p style="font-size:13px;color:#78350F;line-height:1.65;margin:0">${t.text}</p>
+        </div>`
+      ).join('');
+    }
+
     let html;
     if (q.qualified) {
       html = `
         <span class="result-icon-big">🇨🇦</span>
         <p class="result-title" style="color:#166534">Tu corresponds au profil !</p>
-        <p class="result-body">Bonne nouvelle, <strong>${firstName}</strong> — ton profil répond aux critères de base pour Entrée Express. Je vais examiner ta candidature et te contacter sous peu pour discuter des prochaines étapes.</p>
+        <p class="result-body">Bonne nouvelle, <strong>${firstName}</strong> — ton profil répond aux critères de base pour Entrée Express. Je vais examiner ta candidature et te contacter sous peu pour discuter des prochaines étapes.${q.langBonus ? '<br><br>✨ <strong>Bonus :</strong> Maîtriser les deux langues (FR + EN) renforce considérablement ton score CRS.' : ''}</p>
         <div class="criteria-pills">${pills}</div>
         <div class="result-contact-box">
           📧 ${answers.email}<br>
@@ -832,8 +860,9 @@
       html = `
         <span class="result-icon-big">⏳</span>
         <p class="result-title" style="color:#92400E">Pas encore prêt(e)</p>
-        <p class="result-body">Merci, <strong>${firstName}</strong>. Ton profil ne correspond pas encore à tous les critères requis. Suis mes contenus — dès que tu remplis les conditions, je serai là pour t'accompagner.</p>
-        <div class="criteria-pills">${pills}</div>`;
+        <p class="result-body">Merci, <strong>${firstName}</strong>. Ton profil ne remplit pas encore tous les critères requis — mais la bonne nouvelle, c'est que la plupart sont dans tes mains. Voici sur quoi te concentrer :</p>
+        <div class="criteria-pills">${pills}</div>
+        <div style="margin-top:1rem">${buildAdvice(q)}</div>`;
     }
 
     document.getElementById('step-body').innerHTML = `<div class="result-wrap">${html}</div>`;
