@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Évaluation Entrée Express · Immigration Canada</title>
+  <meta name="description" content="Vérifie en 2 minutes si tu es éligible à Entrée Express pour immigrer au Canada. Évaluation gratuite." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:       #D32B2B;
+      --red-light: #FFF0F0;
+      --maple:     #C1121F;
+      --navy:      #0D1B2A;
+      --navy-mid:  #1C3145;
+      --slate:     #4A5568;
+      --muted:     #718096;
+      --border:    #E2E8F0;
+      --bg:        #F8FAFC;
+      --white:     #FFFFFF;
+      --success:   #166534;
+      --success-bg:#DCFCE7;
+      --warn:      #92400E;
+      --warn-bg:   #FEF3C7;
+      --radius:    10px;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--navy);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Hero Banner ─── */
+    .hero {
+      background: var(--navy);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 59px,
+        rgba(193,18,31,0.07) 59px,
+        rgba(193,18,31,0.07) 60px
+      );
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(193,18,31,0.15);
+      border: 1px solid rgba(193,18,31,0.3);
+      color: #FCA5A5;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-eyebrow span { color: var(--red); font-size: 16px; }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: #FCA5A5;
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: #94A3B8;
+      max-width: 480px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--white);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── Main Card ─── */
+    .main {
+      max-width: 600px;
+      margin: -1px auto 0;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .form-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(13,27,42,0.08);
+    }
+
+    /* ─── Progress ─── */
+    .progress-wrap {
+      padding: 1.25rem 1.5rem 0;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .progress-pct {
+      font-size: 12px;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .progress-track {
+      background: #EEF2FF;
+      border-radius: 99px;
+      height: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--maple);
+      border-radius: 99px;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─── Step Body ─── */
+    .step-body {
+      padding: 1.75rem 1.5rem 1.5rem;
+    }
+
+    .step-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .step-question {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+
+    .step-hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    /* ─── Option Pills ─── */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .options-grid.col-1 { grid-template-columns: 1fr; }
+
+    @media (max-width: 400px) {
+      .options-grid { grid-template-columns: 1fr; }
+    }
+
+    .opt {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      font-family: var(--font-body);
+      line-height: 1.4;
+    }
+
+    .opt:hover {
+      border-color: var(--maple);
+      color: var(--maple);
+      background: var(--red-light);
+    }
+
+    .opt.selected {
+      border-color: var(--maple);
+      background: var(--red-light);
+      color: var(--maple);
+    }
+
+    /* ─── Form Fields ─── */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate);
+    }
+
+    .field input,
+    .field select {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font-body);
+      color: var(--navy);
+      background: var(--white);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--maple);
+      box-shadow: 0 0 0 3px rgba(193,18,31,0.1);
+    }
+
+    .field input::placeholder { color: #A0AEC0; }
+
+    /* ─── Section Divider ─── */
+    .sub-section {
+      margin: 1.25rem 0 0.75rem;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ─── Funds highlight ─── */
+    .funds-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .funds-box-icon { font-size: 20px; flex-shrink: 0; }
+
+    .funds-box-text {
+      font-size: 13px;
+      color: #1E40AF;
+      line-height: 1.6;
+    }
+
+    .funds-box-amount {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1E40AF;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ─── Error ─── */
+    .error-msg {
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .error-msg.show { display: flex; }
+
+    /* ─── Nav buttons ─── */
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.5rem 1.5rem;
+      gap: 12px;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-back:hover { border-color: var(--slate); color: var(--navy); }
+
+    .btn-next {
+      background: var(--maple);
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+      cursor: pointer;
+      font-family: var(--font-body);
+      margin-left: auto;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-next:hover { background: var(--red); }
+    .btn-next:active { transform: scale(0.98); }
+
+    .btn-next.loading { opacity: 0.7; cursor: wait; }
+
+    /* ─── Result card ─── */
+    .result-wrap { padding: 2rem 1.5rem; text-align: center; }
+
+    .result-icon-big { font-size: 52px; margin-bottom: 1rem; display: block; }
+
+    .result-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+    }
+
+    .result-body {
+      font-size: 14px;
+      color: var(--slate);
+      line-height: 1.75;
+      max-width: 440px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .criteria-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .cpill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid transparent;
+    }
+
+    .cpill.pass {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: #86EFAC;
+    }
+
+    .cpill.fail {
+      background: #FEE2E2;
+      color: #991B1B;
+      border-color: #FCA5A5;
+    }
+
+    .result-contact-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--slate);
+      line-height: 2;
+      margin-top: 1rem;
+    }
+
+    /* ─── Spinner overlay ─── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,27,42,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .overlay.show { display: flex; }
+
+    .spinner-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--maple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-text {
+      font-size: 14px;
+      color: var(--slate);
+    }
+
+    /* ─── Footer ─── */
+    .page-footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 12px;
+      color: #A0AEC0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow"><span>🍁</span> Immigration Canada · Évaluation gratuite</div>
+  <h1>Le Canada cherche<br><em>des gens comme toi.</em></h1>
+  <p class="hero-sub">Réponds à 9 questions pour savoir si tu es éligible à Entrée Express — le programme le plus rapide pour obtenir la résidence permanente.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">~8 mois</span>
+      <span class="stat-label">Traitement moyen</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">En ligne</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">Gratuit</span>
+      <span class="stat-label">Cette évaluation</span>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz -->
+<div class="main">
+  <div class="form-card">
+
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-label" id="step-label">Étape 1 sur 9</span>
+        <span class="progress-pct" id="step-pct">11%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:11%"></div>
+      </div>
+    </div>
+
+    <div class="step-body" id="step-body"></div>
+    <div class="step-nav" id="step-nav"></div>
+
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="overlay" id="overlay">
+  <div class="spinner-box">
+    <div class="spinner"></div>
+    <p class="spinner-text">Envoi de ta candidature…</p>
+  </div>
+</div>
+
+<footer class="page-footer">
+  Tes données sont utilisées uniquement pour traiter ta demande d'évaluation.
+</footer>
+
+<script>
+  /* ══════════════════════════════════════════════
+     CONFIG — remplace l'URL par ton Apps Script
+     ══════════════════════════════════════════════ */
+  const SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzMcIG08p_l7z-jlI_f2t44_UV5Nn0C5Nt3Uh8H3t7N_5tQAKLUfjca8LnnC5kFFTQpGQ/exec';
+  /* ══════════════════════════════════════════════ */
+
+  const COUNTRIES = ["Afghanistan","Afrique du Sud","Albanie","Algérie","Allemagne","Angola","Arabie Saoudite","Argentine","Australie","Autriche","Azerbaïdjan","Bahreïn","Bangladesh","Belgique","Bénin","Bolivie","Bosnie-Herzégovine","Brésil","Bulgarie","Burkina Faso","Burundi","Cameroun","Canada","Chili","Chine","Chypre","Colombie","Comores","Congo (RDC)","Congo (Rép.)","Corée du Sud","Côte d'Ivoire","Croatie","Cuba","Danemark","Djibouti","Égypte","Émirats arabes unis","Équateur","Eritrée","Espagne","Éthiopie","États-Unis","Finlande","France","Gabon","Gambie","Ghana","Grèce","Guatemala","Guinée","Guinée-Bissau","Guinée équatoriale","Haïti","Hongrie","Inde","Indonésie","Irak","Iran","Irlande","Italie","Jamaïque","Japon","Jordanie","Kazakhstan","Kenya","Koweït","Liban","Libye","Luxembourg","Madagascar","Mali","Maroc","Maurice","Mauritanie","Mexique","Moldavie","Mozambique","Namibie","Nigéria","Norvège","Nouvelle-Zélande","Oman","Ouganda","Pakistan","Palestine","Panama","Pays-Bas","Pérou","Philippines","Pologne","Portugal","Qatar","République centrafricaine","Roumanie","Royaume-Uni","Russie","Rwanda","Sénégal","Serbie","Sierra Leone","Slovaquie","Slovénie","Somalie","Soudan","Suède","Suisse","Tanzanie","Tchad","Togo","Tunisie","Turquie","Ukraine","Uruguay","Venezuela","Vietnam","Yémen","Zambie","Zimbabwe","Autre"];
+
+  const answers = {};
+  let step = 0;
+
+  const STEPS = [
+    { id: 'contact',            type: 'contact',        icon: '👤', q: 'Tes coordonnées',                           hint: 'Pour te contacter après l\'évaluation.' },
+    { id: 'country_residence',  type: 'country',        icon: '🌍', q: 'Ton pays de résidence actuel',              hint: 'Où vis-tu en ce moment ?' },
+    { id: 'country_citizenship',type: 'country',        icon: '🛂', q: 'Ton pays de nationalité / citoyenneté',     hint: 'Sur quel passeport tu voyages ?' },
+    { id: 'age',                type: 'choice',         icon: '🎂', q: 'Quel est ton âge ?',                        hint: '',
+      opts: ['Moins de 25 ans','25 – 29 ans','30 – 35 ans','Plus de 35 ans'] },
+    { id: 'education',          type: 'choice',         icon: '🎓', q: 'Ton niveau d\'études le plus élevé',        hint: '',
+      opts: ['Baccalauréat (Licence / Bachelor)','Master ou équivalent','Doctorat','Inférieur au Baccalauréat'] },
+    { id: 'experience',         type: 'choice',         icon: '💼', q: 'Années d\'expérience professionnelle',      hint: 'Travail à temps plein (≥ 30h/semaine)',
+      opts: ['Moins d\'1 an','1 – 2 ans','3 – 5 ans','Plus de 5 ans'] },
+    { id: 'language',           type: 'choice',         icon: '🗣', q: 'Peux-tu passer un test de langue ?',        hint: 'TEF Canada / TCF Canada (FR) ou IELTS / CELPIP (EN)',
+      opts: ['Oui, en français (TEF/TCF)','Oui, en anglais (IELTS/CELPIP)','Pas encore de test prévu','Je ne sais pas'] },
+    { id: 'family',             type: 'family',         icon: '👨‍👩‍👧', q: 'Ta situation familiale',                      hint: 'Cela détermine le montant de fonds requis.' },
+    { id: 'funds',              type: 'funds',          icon: '💰', q: 'Preuves de fonds disponibles',             hint: '' },
+  ];
+
+  function minFundsCAD() {
+    const married = answers.married === 'Oui' ? 1 : 0;
+    const children = parseInt(answers.children || '0');
+    const n = 1 + married + (answers.children === '3 ou plus' ? 3 : children);
+    const table = [14690, 18288, 22483, 27297, 31703, 35733, 39759, 43785];
+    return table[Math.min(n - 1, table.length - 1)];
+  }
+
+  function fmtCAD(n) {
+    return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n);
+  }
+
+  function countrySelect(id) {
+    const opts = COUNTRIES.map(c =>
+      `<option value="${c}" ${answers[id] === c ? 'selected' : ''}>${c}</option>`
+    ).join('');
+    return `<div class="field"><label class="field-label">Sélectionne un pays</label>
+      <select id="sel-country"><option value="">— Choisir —</option>${opts}</select>
+    </div>`;
+  }
+
+  function renderStep() {
+    const total = STEPS.length;
+    const pct = Math.round(((step + 1) / (total + 1)) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('step-label').textContent = `Étape ${step + 1} sur ${total}`;
+    document.getElementById('step-pct').textContent = pct + '%';
+
+    const s = STEPS[step];
+    let html = `<span class="step-icon">${s.icon}</span>
+      <p class="step-question">${s.q}</p>
+      ${s.hint ? `<p class="step-hint">${s.hint}</p>` : ''}`;
+
+    if (s.type === 'contact') {
+      html += `<div class="field-group">
+        <div class="field"><label class="field-label">Prénom et nom *</label>
+          <input type="text" id="f-name" placeholder="Amara Diallo" value="${answers.name || ''}" /></div>
+        <div class="field"><label class="field-label">Email *</label>
+          <input type="email" id="f-email" placeholder="ton@email.com" value="${answers.email || ''}" /></div>
+        <div class="field"><label class="field-label">WhatsApp (avec indicatif) *</label>
+          <input type="text" id="f-phone" placeholder="+243 81 234 5678" value="${answers.whatsapp || ''}" /></div>
+      </div>`;
+
+    } else if (s.type === 'country') {
+      html += countrySelect(s.id);
+
+    } else if (s.type === 'choice') {
+      const cols = s.opts.length <= 2 ? 'col-1' : '';
+      const btns = s.opts.map(o =>
+        `<button class="opt ${answers[s.id] === o ? 'selected' : ''}" data-val="${o}">${o}</button>`
+      ).join('');
+      html += `<div class="options-grid ${cols}" id="opts-grid">${btns}</div>`;
+
+    } else if (s.type === 'family') {
+      const mOpts = ['Oui','Non'].map(o =>
+        `<button class="opt ${answers.married === o ? 'selected' : ''}" data-key="married" data-val="${o}">${o === 'Oui' ? '💍 Marié(e) / en union' : '🙋 Célibataire'}</button>`
+      ).join('');
+      const cOpts = ['0','1','2','3 ou plus'].map(n =>
+        `<button class="opt ${answers.children === n ? 'selected' : ''}" data-key="children" data-val="${n}">${n === '0' ? 'Aucun enfant' : n + ' enfant' + (n === '1' ? '' : 's')}</button>`
+      ).join('');
+      html += `
+        <p class="sub-section">Statut matrimonial</p>
+        <div class="options-grid">${mOpts}</div>
+        <p class="sub-section" style="margin-top:1.25rem">Enfants à charge (moins de 18 ans)</p>
+        <div class="options-grid">${cOpts}</div>`;
+
+    } else if (s.type === 'funds') {
+      const min = minFundsCAD();
+      html += `
+        <div class="funds-box">
+          <span class="funds-box-icon">📋</span>
+          <div class="funds-box-text">Pour ton foyer, le minimum IRCC exigé est
+            <span class="funds-box-amount">${fmtCAD(min)}</span>
+          </div>
+        </div>
+        <div class="options-grid col-1" id="opts-grid">
+          ${['Oui, j\'ai ces fonds disponibles','Non, pas encore','Je ne suis pas sûr(e)'].map(o =>
+            `<button class="opt ${answers.funds === o ? 'selected' : ''}" data-val="${o}">${o}</button>`
+          ).join('')}
+        </div>`;
+    }
+
+    html += `<div class="error-msg" id="err-msg">⚠ Complète cette étape pour continuer.</div>`;
+
+    document.getElementById('step-body').innerHTML = html;
+
+    // Bind option buttons
+    document.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key || s.id;
+        const val = btn.dataset.val;
+        answers[key] = val;
+        if (btn.dataset.key) {
+          document.querySelectorAll(`[data-key="${key}"]`).forEach(b => b.classList.remove('selected'));
+        } else {
+          document.querySelectorAll('#opts-grid .opt').forEach(b => b.classList.remove('selected'));
+        }
+        btn.classList.add('selected');
+        hideErr();
+      });
+    });
+
+    // Nav
+    const nav = document.getElementById('step-nav');
+    nav.innerHTML = `
+      ${step > 0 ? `<button class="btn-back" id="btn-back">← Retour</button>` : '<span></span>'}
+      <button class="btn-next" id="btn-next">Continuer <span>→</span></button>`;
+
+    if (step > 0) {
+      document.getElementById('btn-back').addEventListener('click', () => { step--; renderStep(); });
+    }
+    document.getElementById('btn-next').addEventListener('click', advance);
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('err-msg');
+    el.textContent = '⚠ ' + (msg || 'Complète cette étape pour continuer.');
+    el.classList.add('show');
+  }
+
+  function hideErr() {
+    const el = document.getElementById('err-msg');
+    if (el) el.classList.remove('show');
+  }
+
+  function advance() {
+    const s = STEPS[step];
+
+    if (s.type === 'contact') {
+      const name  = document.getElementById('f-name').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const phone = document.getElementById('f-phone').value.trim();
+      if (!name || !email || !phone || !email.includes('@')) {
+        return showErr('Remplis tous les champs correctement.');
+      }
+      answers.name = name; answers.email = email; answers.whatsapp = phone;
+
+    } else if (s.type === 'country') {
+      const v = document.getElementById('sel-country').value;
+      if (!v) return showErr('Sélectionne un pays.');
+      answers[s.id] = v;
+
+    } else if (s.type === 'choice') {
+      if (!answers[s.id]) return showErr('Sélectionne une réponse.');
+
+    } else if (s.type === 'family') {
+      if (!answers.married || !answers.children) return showErr('Réponds aux deux questions.');
+
+    } else if (s.type === 'funds') {
+      if (!answers.funds) return showErr('Sélectionne une réponse.');
+    }
+
+    hideErr();
+    if (step < STEPS.length - 1) {
+      step++;
+      renderStep();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      submitAndShow();
+    }
+  }
+
+  /* ─── Qualification logic ─── */
+  function qualify() {
+    const agePasses  = ['Moins de 25 ans','25 – 29 ans','30 – 35 ans'].includes(answers.age);
+    const eduPasses  = answers.education !== 'Inférieur au Baccalauréat';
+    const expPasses  = answers.experience !== 'Moins d\'1 an';
+    const langPasses = answers.language === 'Oui, en français (TEF/TCF)' || answers.language === 'Oui, en anglais (IELTS/CELPIP)';
+    const fundsPasses = answers.funds === 'Oui, j\'ai ces fonds disponibles';
+    const qualified  = agePasses && eduPasses && expPasses && langPasses && fundsPasses;
+    return { qualified, agePasses, eduPasses, expPasses, langPasses, fundsPasses };
+  }
+
+  /* ─── Submit to Google Sheets ─── */
+  async function submitAndShow() {
+    const q = qualify();
+    const payload = {
+      timestamp:           new Date().toLocaleString('fr-CA', { timeZone: 'America/Toronto' }),
+      name:                answers.name,
+      email:               answers.email,
+      whatsapp:            answers.whatsapp,
+      country_residence:   answers.country_residence,
+      country_citizenship: answers.country_citizenship,
+      age:                 answers.age,
+      education:           answers.education,
+      experience:          answers.experience,
+      language:            answers.language,
+      married:             answers.married,
+      children:            answers.children,
+      funds:               answers.funds,
+      funds_min_required:  fmtCAD(minFundsCAD()),
+      qualified:           q.qualified ? 'OUI' : 'NON',
+    };
+
+    // Show overlay spinner
+    document.getElementById('overlay').classList.add('show');
+
+    try {
+      if (SHEET_WEBHOOK && SHEET_WEBHOOK !== 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+        await fetch(SHEET_WEBHOOK, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+    } catch (e) {
+      console.warn('Sheet submission failed (non-blocking):', e);
+    }
+
+    document.getElementById('overlay').classList.remove('show');
+    showResult(q);
+  }
+
+  /* ─── Result screen ─── */
+  function showResult(q) {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('step-label').textContent = 'Évaluation terminée';
+    document.getElementById('step-pct').textContent = '100%';
+    document.getElementById('step-nav').innerHTML = '';
+
+    const pills = [
+      { label: 'Âge ≤ 35 ans',        pass: q.agePasses,   val: answers.age },
+      { label: 'Bac ou plus',          pass: q.eduPasses,   val: answers.education },
+      { label: 'Expérience ≥ 1 an',    pass: q.expPasses,   val: answers.experience },
+      { label: 'Test de langue',       pass: q.langPasses,  val: answers.language },
+      { label: 'Fonds disponibles',    pass: q.fundsPasses, val: answers.funds },
+    ].map(p =>
+      `<span class="cpill ${p.pass ? 'pass' : 'fail'}">${p.pass ? '✓' : '✗'} ${p.label}</span>`
+    ).join('');
+
+    const firstName = answers.name.split(' ')[0];
+
+    let html;
+    if (q.qualified) {
+      html = `
+        <span class="result-icon-big">🇨🇦</span>
+        <p class="result-title" style="color:#166534">Tu corresponds au profil !</p>
+        <p class="result-body">Bonne nouvelle, <strong>${firstName}</strong> — ton profil répond aux critères de base pour Entrée Express. Je vais examiner ta candidature et te contacter sous peu pour discuter des prochaines étapes.</p>
+        <div class="criteria-pills">${pills}</div>
+        <div class="result-contact-box">
+          📧 ${answers.email}<br>
+          📱 ${answers.whatsapp}<br>
+          🌍 ${answers.country_residence} · ${answers.country_citizenship}
+        </div>`;
+    } else {
+      html = `
+        <span class="result-icon-big">⏳</span>
+        <p class="result-title" style="color:#92400E">Pas encore prêt(e)</p>
+        <p class="result-body">Merci, <strong>${firstName}</strong>. Ton profil ne correspond pas encore à tous les critères requis. Suis mes contenus — dès que tu remplis les conditions, je serai là pour t'accompagner.</p>
+        <div class="criteria-pills">${pills}</div>`;
+    }
+
+    document.getElementById('step-body').innerHTML = `<div class="result-wrap">${html}</div>`;
+  }
+
+  // Boot
+  renderStep();
+</script>
+</body>
+</html>
